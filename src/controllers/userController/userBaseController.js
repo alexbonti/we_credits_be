@@ -12,6 +12,7 @@ import Service from "../../services";
 import async from "async";
 import UniversalFunctions from "../../utils/universalFunctions";
 import TokenManager from "../../lib/tokenManager";
+const NodeMailer = require('../../lib/nodeMailer') ;
 
 const CodeGenerator = require("../../lib/codeGenerator");
 const ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
@@ -42,7 +43,7 @@ const createUser = (payloadData, callback) => {
                 if (data[0].emailVerified == true)
                   cb(ERROR.USER_ALREADY_REGISTERED);
                 else {
-                  Service.UserService.deleteUser(
+                  Service.UserService.deleteRecord(
                     { _id: data[0]._id },
                     (err, updatedData) => {
                       if (err) cb(err);
@@ -58,20 +59,6 @@ const createUser = (payloadData, callback) => {
       (cb) => {
         //Validate for facebookId and password
         if (!dataToSave.password) cb(ERROR.PASSWORD_REQUIRED);
-        else cb();
-      },
-      (cb) => {
-        //Validate countryCode
-        if (dataToSave.countryCode.lastIndexOf("+") == 0) {
-          if (!isFinite(dataToSave.countryCode.substr(1))) {
-            cb(ERROR.INVALID_COUNTRY_CODE);
-          } else cb();
-        } else cb(ERROR.INVALID_COUNTRY_CODE);
-      },
-      (cb) => {
-        //Validate phone No
-        if (dataToSave.phoneNumber && dataToSave.phoneNumber.split("")[0] == 0)
-          cb(ERROR.INVALID_PHONE_NO_FORMAT);
         else cb();
       },
       (cb) => {
@@ -113,17 +100,16 @@ const createUser = (payloadData, callback) => {
           }
         );
       },
-      //  (cb) => {
-      //     //Send SMS to User
-      //     if (customerData) {
-      //         NotificationManager.sendSMSToUser(uniqueCode, dataToSave.countryCode, dataToSave.mobileNo, (err, data) => {
-      //             cb();
-      //         })
-      //     } else {
-      //         cb(ERROR.IMP_ERROR)
-      //     }
-      //
-      // },
+       (cb) => {
+          //Send Email to User
+          if (customerData) {
+              NodeMailer.sendMail(customerData.emailId,"WeCredits: Email Verification",{OTP:uniqueCode},"otpverification")
+              cb()
+          } else {
+              cb(ERROR.IMP_ERROR)
+          }
+      
+      },
       (cb) => {
         //Set Access Token
         if (customerData) {
@@ -788,6 +774,16 @@ var forgetPassword = function (payloadData, callback) {
           );
         }
       },
+      (cb) => {
+        //Send Email to User
+        if (customerData) {
+            NodeMailer.sendMail(customerData.emailId,"WeCredits: Paasword Reset Request",{firstname: customerData.firstName ,OTP:code},"passwordreset")
+            cb()
+        } else {
+            cb(ERROR.IMP_ERROR)
+        }
+    
+    },
     ],
     function (error, result) {
       if (error) {

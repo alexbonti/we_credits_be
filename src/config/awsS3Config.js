@@ -4,11 +4,11 @@
 * as the name you give while running upload_setup.sh
 */
 var s3BucketCredentials = {
-    "projectFolder": "<project_folder_name>",
-    "bucket": "<project_bucket_ibm>",
-    "endpoint": 's3.au-syd.cloud-object-storage.appdomain.cloud',
-    "apiKeyId": 'mhNbtjQUlsq2LBh5F03g81g1Wcq8hN6H1ZrWnpRtcD3L',
-    "serviceInstanceId": "crn:v1:bluemix:public:cloud-object-storage:global:a/200d885c6c6a4629814c74e3c7594d35:bb53fed0-c301-4705-ad41-27a08a0ae3a6:bucket:ipan-v2-bucket",
+    "projectFolder":"degicredit-bucket",
+    "bucket": "degicredit-bucket",
+    "accessKeyId": "AKIAVF72J5OOI7VYO3WN",
+    "secretAccessKey": "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",
+    "s3URL": "https://my-maps-bucket.s3.ap-southeast-2.amazonaws.com",
     "folder": {
         "profilePicture": "profilePicture",
         "thumb": "thumb",
@@ -20,6 +20,6 @@ var s3BucketCredentials = {
         "audio": "audio"
     }
 };
-export default {
+module.exports = {
     s3BucketCredentials: s3BucketCredentials
 };

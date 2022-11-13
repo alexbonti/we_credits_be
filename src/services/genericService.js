@@ -79,6 +79,19 @@ export default class GenericService {
 
     /**
      * @author Sanchit Dang
+     * @description Retrive records
+     * @param {Object} criteria 
+     * @param {Object} projection 
+     * @param {Object} options 
+     * @param {Function} callback 
+     */
+     getRecordWithPagination(criteria, projection, options, callback) {
+        options.lean = true;
+        MODELS[this.modelName].find(criteria, projection, options, callback).skip(options.skip).limit(options.limit);
+    }
+
+    /**
+     * @author Sanchit Dang
      * @description Retrive records while populating them
      * @param {Object} criteria 
      * @param {Object} projection 

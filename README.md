@@ -1,4 +1,4 @@
-# Node.js User Onboarding application
+# Node.js Degicredit Backend
 A Node based module using Mongodb to onboard user's into a very basic application, secured using JWT authorization.
 
 The Node.js app uses [Hapi Framework](https://hapijs.com) and [Hapi Swagger](https://github.com/glennjones/hapi-swagger)

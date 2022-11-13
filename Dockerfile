@@ -1,10 +1,17 @@
-FROM node:10
+FROM node:16-alpine
 
-WORKDIR /app
-COPY . .
+RUN apk add --update imagemagick && \
+    apk add --update graphicsmagick && \
+    apk add --update ffmpeg && \
+    apk add --update bash
 
-EXPOSE 8000
+WORKDIR /app 
+COPY . . 
 
-RUN npm install
+EXPOSE 8026
 
-CMD ["npm","start"]
+RUN npm install --silent
+RUN cp .env.example .env
+RUN PROJECT_FOLDER=degicredit-bucket bash setup_upload.sh
+
+CMD ["npm", "start"]

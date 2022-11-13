@@ -12,7 +12,6 @@ const user = new Schema({
     max: 15
   },
   password: { type: String },
-  deakinSSO: { type: Boolean, default: false},
   initialPassword: { type: String },
   firstLogin: { type: Boolean, default: false },
   countryCode: { type: String },
@@ -21,7 +20,8 @@ const user = new Schema({
   emailVerified: { type: Boolean, default: false },
   registrationDate: { type: Date, default: Date.now },
   codeUpdatedAt: { type: Date, default: Date.now, required: true },
-  isBlocked: { type: Boolean, default: false, required: true }
+  isBlocked: { type: Boolean, default: false, required: true },
+  stripeId: { type: String },
 });
 
 export default mongoose.model("user", user);

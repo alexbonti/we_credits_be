@@ -563,6 +563,268 @@ var logoutAdmin = function (userData, callbackRoute) {
   );
 }
 
+const createProductTypes = function (userData, payloadData, callback) {
+  let userFound, productData;
+  async.series([
+    (cb) => {
+      Service.AdminService.getRecord({
+        _id: userData.adminId
+      }, { password: 0 }, {}, (err, data) => {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(this.ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            if (userFound.isBlocked == true) cb(this.ERROR.ACCOUNT_BLOCKED)
+            else cb()
+          }
+        }
+      });
+    },
+    (cb) => {
+      Service.ProductTypeService.createRecord(payloadData,(err,data) => {
+        if(err) cb(err);
+        else {
+          productData = data;
+          cb()
+        }
+      })
+    }
+  ], (err) => {
+    if (err) return callback(err);
+    callback(null, {data: productData})
+  })
+}
+
+const getProductTypes = function (userData, callback) {
+  let productTypes = [];
+  let userFound;
+  async.series([
+    (cb) => {
+      const criteria = {
+        _id: userData.adminId
+      };
+      Service.AdminService.getRecord(criteria, { password: 0 }, {}, (err, data) => {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(this.ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            if (userFound.isBlocked == true) cb(this.ERROR.ACCOUNT_BLOCKED)
+            else cb();
+          }
+        }
+      });
+    },
+    (cb) => {
+      Service.ProductTypeService.getRecord({}, { password: 0, __v: 0, createdAt: 0 }, {}, (err, data) => {
+        if (err) cb(err)
+        else {
+          productTypes = data;
+          cb()
+        }
+      })
+    }
+  ], (err) => {
+    if (err) callback(err)
+    else callback(null, { data: productTypes })
+  })
+}
+
+const getProductApprovalRequests = function (userData,payloadData, callback) {
+  let productData;
+  let userFound;
+  async.series([
+    (cb) => {
+      const criteria = {
+        _id: userData.adminId
+      };
+      Service.AdminService.getRecord(criteria, { password: 0 }, {}, (err, data) => {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(this.ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            if (userFound.isBlocked == true) cb(this.ERROR.ACCOUNT_BLOCKED)
+            else cb();
+          }
+        }
+      });
+    },
+    (cb) => {
+      const query = {
+        $or:[
+          {status: "PENDING"},
+          {status: "PROCESSING"}
+        ]
+      };
+      const projection = {
+      };
+      Service.ProductService.getRecordWithPagination(query, projection, {skip: payloadData.skip,limit: payloadData.limit}, (err, data) => {
+        if (err) cb(err);
+        productData = data;
+        cb(null);
+      });
+    }
+  ], (err) => {
+    if (err) callback(err)
+    else callback(null, { data: productData })
+  })
+}
+
+const approveProduct = function (userData,payloadData, callback) {
+  let userFound, productData;
+  async.series([
+    (cb) => {
+      const criteria = {
+        _id: userData.adminId
+      };
+      Service.AdminService.getRecord(criteria, { password: 0 }, {}, (err, data) => {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(this.ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            if (userFound.isBlocked == true) cb(this.ERROR.ACCOUNT_BLOCKED)
+            else cb();
+          }
+        }
+      });
+    },
+    (cb) => {
+      const query = {
+        _id: payloadData.id,
+      };
+      const projection = {
+      };
+      Service.ProductService.getRecord(query, projection, {}, (err, data) => {
+        if (err) cb(err);
+        else {
+          if(data.length == 0) cb(ERROR.PRODUCT_NO_EXIST)
+          else {
+            productData = data && data[0] || null;
+            cb()
+          }
+        }
+      });
+    },
+    (cb) => {
+      if(productData.status == "PENDING") {
+          const query = {
+            _id: payloadData.transaction,
+          };
+          const dataToUpdate = {
+            $set: {
+              sellerKycApproved: true
+            }
+          };
+          Service.TransactionService.updateRecord(query, dataToUpdate, {}, (err, data) => {
+            if (err) cb(err);
+            else cb()
+          });
+        }
+      else if(productData.status == "PROCESSING") {
+        const query = {
+          _id: payloadData.transaction,
+        };
+        const dataToUpdate = {
+          $set: {
+            buyerKycApproved: true
+          }
+        };
+        Service.TransactionService.updateRecord(query, dataToUpdate, {}, (err, data) => {
+          if (err) cb(err);
+          else cb()
+        });
+      }
+      else cb()
+    },
+    (cb) => {
+      if(productData.status == "PENDING") {
+        const query = {
+          _id: payloadData.id,
+        };
+        const dataToUpdate = {
+          $set: {
+            onMarket: true,
+            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE
+          }
+        };
+        Service.ProductService.updateRecord(query, dataToUpdate, {}, (err, data) => {
+          if (err) cb(err);
+          else cb()
+        });
+      }
+      else if(productData.status == "PROCESSING") {
+        const query = {
+          _id: payloadData.id,
+        };
+        const dataToUpdate = {
+          $set: {
+            onMarket: false,
+            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.COMPLETED
+          }
+        };
+        Service.ProductService.updateRecord(query, dataToUpdate, {}, (err, data) => {
+          if (err) cb(err);
+          else cb()
+        });
+      }
+      else cb()
+    }
+  ], (err) => {
+    if (err) callback(err)
+    else callback(null, {})
+  })
+}
+
+const getProductDetails = function (userData,payloadData, callback) {
+  let productData;
+  let userFound;
+  async.series([
+    (cb) => {
+      const criteria = {
+        _id: userData.adminId
+      };
+      Service.AdminService.getRecord(criteria, { password: 0 }, {}, (err, data) => {
+        if (err) cb(err);
+        else {
+          if (data.length == 0) cb(this.ERROR.INCORRECT_ACCESSTOKEN);
+          else {
+            userFound = (data && data[0]) || null;
+            if (userFound.isBlocked == true) cb(this.ERROR.ACCOUNT_BLOCKED)
+            else cb();
+          }
+        }
+      });
+    },
+    (cb) => {
+      const query = {
+        _id: payloadData.id
+      };
+
+      var path = "transaction";
+      var select = "";
+      var populate = {
+        path: path,
+        match: {},
+        select: select,
+        options: {
+          lean: true
+        }
+      };
+      Service.ProductService.getPopulatedRecords(query, {}, populate, (err, data) => {
+        if (err) cb(err);
+        productData = data;
+        cb(null);
+      });
+    }
+  ], (err) => {
+    if (err) callback(err)
+    else callback(null, { data: productData })
+  })
+}
+
 export default {
   adminLogin,
   accessTokenLogin,
@@ -573,5 +835,10 @@ export default {
   getUser,
   blockUnblockUser,
   changePassword,
-  logoutAdmin
+  logoutAdmin,
+  createProductTypes,
+  getProductTypes,
+  getProductApprovalRequests,
+  approveProduct,
+  getProductDetails
 };

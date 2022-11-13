@@ -21,6 +21,17 @@ const DATABASE = {
     USER: "USER",
     SUPERADMIN: "SUPERADMIN",
     ADMIN: "ADMIN"
+  },
+  PRODUCT_TYPES: {
+    TYPE1: "TYPE1",
+    TYPE2: "TYPE2",
+    TYPE3: "TYPE3"
+  },
+  PRODUCT_STATUS: {
+    PENDING: "PENDING",
+    AVAILABLE: "AVAILABLE",
+    PROCESSING: "PROCESSING",
+    COMPLETED: "COMPLETED"
   }
 };
 
@@ -222,6 +233,21 @@ var STATUS_MSG = {
       statusCode: 400,
       customMessage: "Your link has expired. Please sign in again.",
       type: "SSO_STRING_EXPIRED"
+    },
+    PRODUCT_TYPE_NO_EXIST: {
+      statusCode: 400,
+      customMessage: "Product type does not exist",
+      type: "PRODUCT_TYPE_NO_EXIST"
+    },
+    PRODUCT_NO_EXIST: {
+      statusCode: 400,
+      customMessage: "Product does not exist",
+      type: "PRODUCT_NO_EXIST"
+    },
+    PAYMENT_DECLINED: {
+      statusCode: 400,
+      customMessage: "Unfortunately your payment was declined.",
+      type: "PAYMENT_DECLINED"
     }
   },
   SUCCESS: {
