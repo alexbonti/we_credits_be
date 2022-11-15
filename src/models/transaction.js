@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import Config from "../config";
 
 var cardDetails = new Schema({
     cardNumber: { type: Number },
@@ -10,26 +11,33 @@ var cardDetails = new Schema({
 
 const transaction = new Schema({
     productId: { type: Schema.Types.ObjectId, ref: 'product', required: true },
-    sellerKycApproved: { type: Boolean, default: false, required: true },
-    buyerKycApproved: { type: Boolean, default: false, required: true },
-    sellerKycAmount: {
-        amount: {type: Number},
-        cardDetails: {type: cardDetails},
-        paymentStatus: {type: String, enum:["PENDING","COMPLETED"]}
+    buyerId: { type: Schema.Types.ObjectId, ref: 'user' },
+    buyerKyc: {
+        kycTransaction: {
+            amount: {type: Number},
+            cardDetails: {type: cardDetails},
+            stripertransactionId: {type: String},
+            paymentStatus: {type: String, enum:["PENDING","COMPLETED"]}
+        },
+        documentUrl: {type: String},
+        adminApproved: { type: Boolean, default: false, required: true },
+        kycSignature: {type: String},
+        createdAt: { type: Date, default: Date.now }
     },
-    sellerKycDocument: {type: String},
-    buyerKycAmount: {
-        amount: {type: Number},
-        cardDetails: {type: cardDetails},
-        paymentStatus: {type: String, enum:["PENDING","COMPLETED"]}
-    },
-    buyerKycDocument: {type: String},
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date },
     additionalDocuments: [{
         name: {type: String},
-        link: {type: String}
-    }]
+        link: {type: String},
+        userId: { type: Schema.Types.ObjectId, ref: 'user' }
+    }],
+    status: { type: String, enum: [
+        Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.PENDING,
+        Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.PROCESSING,
+        Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.ADMIN_APPROVAL,
+        Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.COMPLETED,
+        Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.CANCELLED
+    ],default: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.PENDING},
 });
 
 export default mongoose.model("transaction", transaction);

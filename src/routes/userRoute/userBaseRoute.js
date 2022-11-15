@@ -143,7 +143,7 @@ const login = {
 
 const resendOTP = {
   method: "PUT",
-  path: "/api/user/resendOTP",
+  path: "/api/user/OTP/resend",
   options: {
     description: "Resend OTP for Customer",
     tags: ["api", "customer"],
@@ -185,7 +185,7 @@ const resendOTP = {
 
 const getOTP = {
   method: "GET",
-  path: "/api/user/getOTP",
+  path: "/api/user/OTP",
   options: {
     description: "get OTP for Customer",
     tags: ["api", "user"],
@@ -227,7 +227,7 @@ const getOTP = {
 
 const accessTokenLogin = {
   method: "POST",
-  path: "/api/user/accessTokenLogin",
+  path: "/api/user/login/accesstoken",
 
   options: {
     description: "access token login",
@@ -312,7 +312,7 @@ const logoutCustomer = {
 
 const getProfile = {
   method: "GET",
-  path: "/api/user/getProfile",
+  path: "/api/user/profile",
   options: {
     description: "get profile of user",
     auth: "UserAuth",
@@ -366,7 +366,7 @@ const getProfile = {
 
 const changePassword = {
   method: "PUT",
-  path: "/api/user/changePassword",
+  path: "/api/user/password",
   options: {
     description: "change Password",
     tags: ["api", "customer"],
@@ -417,7 +417,7 @@ const changePassword = {
 
 const forgotPassword = {
   method: "POST",
-  path: "/api/user/forgotPassword",
+  path: "/api/user/password/forgot",
   options: {
     description: "forgot password",
     tags: ["api", "user"],
@@ -468,7 +468,7 @@ const forgotPassword = {
 
 const resetPassword = {
   method: "POST",
-  path: "/api/user/resetPassword",
+  path: "/api/user/password/reset",
   options: {
     description: "reset password",
     tags: ["api", "user"],

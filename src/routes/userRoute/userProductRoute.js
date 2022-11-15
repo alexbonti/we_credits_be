@@ -204,7 +204,8 @@ const getProducts = {
           id: Joi.string().required()
         },
         payload: Joi.object({
-          sellerKycDocument: Joi.string().required()
+          kycDocument: Joi.string().required(),
+          kycSignature: Joi.string().required()
         }).label("User: add Seller Kyc"),
         failAction: UniversalFunctions.failActionFunction
       },
@@ -222,7 +223,7 @@ const getProducts = {
     method: "PUT",
     path: "/api/user/products/{id}/seller/kyc/payment",
     options: {
-      description: "add Seller Kyc",
+      description: "add Seller Kyc Payment",
       auth: "UserAuth",
       tags: ["api", "user"],
       handler: (request) => {
@@ -251,7 +252,141 @@ const getProducts = {
         },
         payload: Joi.object({
           cardSource: Joi.string().required()
-        }).label("User: add Seller Kyc"),
+        }).label("User: add Seller Kyc Payment"),
+        failAction: UniversalFunctions.failActionFunction
+      },
+      plugins: {
+        "hapi-swagger": {
+          security: [{ 'user': {} }],
+          responseMessages:
+            Config.APP_CONSTANTS.swaggerDefaultResponseMessages
+        }
+      }
+    }
+  };
+
+  const addBuyerToProduct = {
+    method: "PUT",
+    path: "/api/user/products/{id}/buyer",
+    options: {
+      description: "add Buyer to product",
+      auth: "UserAuth",
+      tags: ["api", "user"],
+      handler: (request) => {
+        const userData = (request.auth && request.auth.credentials && request.auth.credentials.userData) || null;
+        return new Promise((resolve, reject) => {
+          Controller.UserProductController.addBuyerToProduct(userData, request.params, (error, success) => {
+            if (error) {
+              reject(UniversalFunctions.sendError(error));
+            } else {
+              resolve(
+                  UniversalFunctions.sendSuccess(
+                  Config.APP_CONSTANTS.STATUS_MSG.SUCCESS
+                    .DEFAULT,
+                  success
+                )
+              );
+            }
+          });
+        });
+      },
+      validate: {
+        params: {
+          id: Joi.string().required()
+        },
+        failAction: UniversalFunctions.failActionFunction
+      },
+      plugins: {
+        "hapi-swagger": {
+          security: [{ 'user': {} }],
+          responseMessages:
+            Config.APP_CONSTANTS.swaggerDefaultResponseMessages
+        }
+      }
+    }
+  };
+
+  const addBuyerKyc = {
+    method: "PUT",
+    path: "/api/user/transaction/{id}/buyer/kyc",
+    options: {
+      description: "add Buyer Kyc",
+      auth: "UserAuth",
+      tags: ["api", "user"],
+      handler: (request) => {
+        const userData = (request.auth && request.auth.credentials && request.auth.credentials.userData) || null;
+        const payloadData = request.payload;
+        payloadData.id = request.params.id;
+        return new Promise((resolve, reject) => {
+          Controller.UserProductController.addBuyerKyc(userData, payloadData, (error, success) => {
+            if (error) {
+              reject(UniversalFunctions.sendError(error));
+            } else {
+              resolve(
+                  UniversalFunctions.sendSuccess(
+                  Config.APP_CONSTANTS.STATUS_MSG.SUCCESS
+                    .DEFAULT,
+                  success
+                )
+              );
+            }
+          });
+        });
+      },
+      validate: {
+        params: {
+          id: Joi.string().required()
+        },
+        payload: Joi.object({
+          kycDocument: Joi.string().required(),
+          kycSignature: Joi.string().required()
+        }).label("User: add Buyer Kyc"),
+        failAction: UniversalFunctions.failActionFunction
+      },
+      plugins: {
+        "hapi-swagger": {
+          security: [{ 'user': {} }],
+          responseMessages:
+            Config.APP_CONSTANTS.swaggerDefaultResponseMessages
+        }
+      }
+    }
+  };
+
+  const addBuyerKycPayment = {
+    method: "PUT",
+    path: "/api/user/transaction/{id}/buyer/kyc/payment",
+    options: {
+      description: "add Buyer Kyc Payment",
+      auth: "UserAuth",
+      tags: ["api", "user"],
+      handler: (request) => {
+        const userData = (request.auth && request.auth.credentials && request.auth.credentials.userData) || null;
+        const payloadData = request.payload;
+        payloadData.id = request.params.id;
+        return new Promise((resolve, reject) => {
+          Controller.UserProductController.addBuyerKycPayment(userData, payloadData, (error, success) => {
+            if (error) {
+              reject(UniversalFunctions.sendError(error));
+            } else {
+              resolve(
+                  UniversalFunctions.sendSuccess(
+                  Config.APP_CONSTANTS.STATUS_MSG.SUCCESS
+                    .DEFAULT,
+                  success
+                )
+              );
+            }
+          });
+        });
+      },
+      validate: {
+        params: {
+          id: Joi.string().required()
+        },
+        payload: Joi.object({
+          cardSource: Joi.string().required()
+        }).label("User: add Buyer Kyc Payment"),
         failAction: UniversalFunctions.failActionFunction
       },
       plugins: {
@@ -271,5 +406,8 @@ export default [
   getProducts,
   getMarketProducts,
   addSellerKyc,
-  addSellerKycPayment
+  addSellerKycPayment,
+  addBuyerToProduct,
+  addBuyerKyc,
+  addBuyerKycPayment
 ];

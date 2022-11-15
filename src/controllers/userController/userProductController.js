@@ -134,29 +134,6 @@ const createProducts = function (userData, payloadData, callbackRoute) {
                     cb()
                 }
             })
-        },
-        (cb) => {
-          const dataToSave = {
-            productId: productData._id,
-          }
-          Service.TransactionService.createRecord(dataToSave,(err,data) => {
-            if(err) cb(err);
-            else {
-              transactionData = data;
-              cb()
-            }
-          })
-        },
-        (cb) => {
-          const criteria = {
-            _id: productData._id
-          }
-          const dataToUpdate = {
-            $set: {
-              transaction: transactionData._id
-            }
-          }
-          Service.ProductService.updateRecord(criteria,dataToUpdate,{},cb)
         }
       ],
       (error) => {
@@ -197,6 +174,7 @@ const getMarketProducts = function (userData,payloadData, callback) {
           status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE
         };
         const projection = {
+          "sellerKyc.kycTransaction": 0
         };
         Service.ProductService.getRecordWithPagination(query, projection, {skip: payloadData.skip,limit: payloadData.limit}, (err, data) => {
           if (err) cb(err);
@@ -211,7 +189,7 @@ const getMarketProducts = function (userData,payloadData, callback) {
 };
 
 const addSellerKyc = function (userData, payloadData, callbackRoute) {
-  let userFound, productData, transactionData;
+  let userFound;
   async.series(
     [
       (cb) => {
@@ -241,23 +219,21 @@ const addSellerKyc = function (userData, payloadData, callbackRoute) {
           if (err) cb(err);
           else {
             if(data.length == 0) cb(ERROR.PRODUCT_NO_EXIST)
-            else {
-              productData = data && data[0] || null;
-              cb()
-            }
+            else cb()
           }
         });
       },
       (cb) => {
         const criteria = {
-          _id: productData.transaction
+          _id: payloadData.id
         }
         const dataToUpdate = {
           $set: {
-            sellerKycDocument: payloadData.sellerKycDocument
+              "sellerKyc.documentUrl": payloadData.kycDocument,
+              "sellerKyc.kycSignature": payloadData.kycSignature
           }
         }
-        Service.TransactionService.updateRecord(criteria,dataToUpdate,{},(err,data) => {
+        Service.ProductService.updateRecord(criteria,dataToUpdate,{},(err,data) => {
           if(err) cb(err)
           else cb()
         })
@@ -274,7 +250,7 @@ const addSellerKyc = function (userData, payloadData, callbackRoute) {
 }
 
 const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
-  let userFound, productData, transactionData;
+  let userFound, productData;
   async.series(
     [
       (cb) => {
@@ -351,14 +327,264 @@ const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
     // },
       (cb) => {
         const criteria = {
-          _id: productData.transaction
+          _id: productData._id
         }
         const dataToUpdate = {
           $set: {
-            sellerKycAmount: {
-              amount: productData.sellValue,
-              paymentStatus: "COMPLETED"
+              "sellerKyc.kycTransaction": {
+                amount: 50,
+                paymentStatus: "COMPLETED"
+              }
+          }
+        }
+        Service.ProductService.updateRecord(criteria,dataToUpdate,{},(err,data) => {
+          if(err) cb(err)
+          else cb()
+        })
+      }
+    ],
+    (error) => {
+      if (error) {
+        callbackRoute(error);
+      } else {
+        callbackRoute(null,{});
+      }
+    }
+  );
+}
+
+const addBuyerToProduct = function (userData, payloadData, callbackRoute) {
+  let userFound, productData, transactionData;
+  async.series(
+    [
+      (cb) => {
+          const query = {
+              _id: userData.userId,
+            };
+            const options = { lean: true };
+            Service.UserService.getRecord(query, {}, options, (err, data) => {
+              if (err) cb(err);
+              else {
+                if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                else {
+                  userFound = (data && data[0]) || null;
+                  if(userFound.isBlocked) cb(ERROR.ACCOUNT_BLOCKED)
+                  cb();
+                }
+              }
+            });
+      },
+      (cb) => {
+        const query = {
+          _id: payloadData.id,
+        };
+        const projection = {
+        };
+        Service.ProductService.getRecord(query, projection, {}, (err, data) => {
+          if (err) cb(err);
+          else {
+            if(data.length == 0) cb(ERROR.PRODUCT_NO_EXIST)
+            else {
+              productData = data && data[0] || null;
+              if(productData.userId.toString() == userData.userId.toString()) cb(ERROR.SAME_USER_FOR_PRODUCT)
+              else {
+                cb()
+              }
             }
+          }
+        });
+      },
+      (cb) => {
+        const dataToSave = {
+          productId: productData._id,
+          buyerId: userFound._id
+        }
+        Service.TransactionService.createRecord(dataToSave,(err,data) => {
+          if(err) cb(err)
+          else {
+            transactionData = data;
+            cb()
+          }
+        })
+      },
+      (cb) => {
+        const criteria = {
+          _id: productData._id
+        }
+        const dataToUpdate = {
+          $set: {
+            activeTransaction: transactionData._id,
+            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.PROCESSING
+          }
+        }
+        Service.ProductService.updateRecord(criteria,dataToUpdate,{},(err,data) => {
+          if(err) cb(err)
+          else cb()
+        })
+      }
+    ],
+    (error) => {
+      if (error) {
+        callbackRoute(error);
+      } else {
+        callbackRoute(null,{data:transactionData});
+      }
+    }
+  );
+}
+
+const addBuyerKyc = function (userData, payloadData, callbackRoute) {
+  let userFound, transactionData;
+  async.series(
+    [
+      (cb) => {
+          const query = {
+              _id: userData.userId,
+            };
+            const options = { lean: true };
+            Service.UserService.getRecord(query, {}, options, (err, data) => {
+              if (err) cb(err);
+              else {
+                if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                else {
+                  userFound = (data && data[0]) || null;
+                  if(userFound.isBlocked) cb(ERROR.ACCOUNT_BLOCKED)
+                  cb();
+                }
+              }
+            });
+      },
+      (cb) => {
+        const query = {
+          _id: payloadData.id,
+        };
+        const projection = {
+        };
+        Service.TransactionService.getRecord(query, projection, {}, (err, data) => {
+          if (err) cb(err);
+          else {
+            if(data.length == 0) cb(ERROR.TRANSACTION_NO_EXIST)
+            else {
+              transactionData = data && data[0] || null;
+              cb()
+            }
+          }
+        });
+      },
+      (cb) => {
+        const criteria = {
+          _id: transactionData._id
+        }
+        const dataToUpdate = {
+          $set: {
+              "buyerKyc.documentUrl": payloadData.kycDocument,
+              "buyerKyc.kycSignature": payloadData.kycSignature
+          }
+        }
+        Service.TransactionService.updateRecord(criteria,dataToUpdate,{},(err,data) => {
+          if(err) cb(err)
+          else {
+            cb()
+          }
+        })
+      }
+    ],
+    (error) => {
+      if (error) {
+        callbackRoute(error);
+      } else {
+        callbackRoute(null,{});
+      }
+    }
+  );
+}
+
+const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
+  let userFound, transactionData;
+  async.series(
+    [
+      (cb) => {
+          const query = {
+              _id: userData.userId,
+            };
+            const options = { lean: true };
+            Service.UserService.getRecord(query, {}, options, (err, data) => {
+              if (err) cb(err);
+              else {
+                if (data.length == 0) cb(ERROR.INCORRECT_ACCESSTOKEN);
+                else {
+                  userFound = (data && data[0]) || null;
+                  if(userFound.isBlocked) cb(ERROR.ACCOUNT_BLOCKED)
+                  cb();
+                }
+              }
+            });
+      },
+      (cb) => {
+        const query = {
+          _id: payloadData.id,
+        };
+        const projection = {
+        };
+        Service.TransactionService.getRecord(query, projection, {}, (err, data) => {
+          if (err) cb(err);
+          else {
+            if(data.length == 0) cb(ERROR.TRANSACTION_NO_EXIST)
+            else {
+              transactionData = data && data[0] || null;
+              cb()
+            }
+          }
+        });
+      },
+      (cb) => {
+        const dataToSend = {
+          first_name: userFound.firstName,
+          last_name: userFound.lastName,
+          emailId: userFound.emailId
+      }
+      Service.PaymentService.createStripeCustomer(dataToSend, function (err, data) {
+          if (err) cb(err)
+          else {
+              userFound.stripeId = data.id;
+              const criteria = {
+                  _id: userFound._id
+              }
+              const dataToUpdate = {
+                  $set: {
+                      stripeId: data.id
+                  }
+              }
+              Service.UserService.updateRecord(criteria, dataToUpdate, {}, function (err, data) {
+                  if (err) cb(err)
+                  else cb()
+              })
+          }
+      })
+    },
+    // (cb) => {
+    //     const dataToSend = {
+    //         customerId: userFound.stripeId,
+    //         cardSource: payloadData.cardSource
+    //     }
+    //     Service.PaymentService.addStripeCard(dataToSend, function (err, data) {
+    //         if (err) cb(ERROR.PAYMENT_DECLINED)
+    //         else {
+    //             cardDetails = data;
+    //             cb()
+    //         }
+    //     })
+    // },
+      (cb) => {
+        const criteria = {
+          _id: transactionData._id
+        }
+        const dataToUpdate = {
+          $set: {
+              "buyerKyc.kycTransaction": {
+                amount: 50,
+                paymentStatus: "COMPLETED"
+              }
           }
         }
         Service.TransactionService.updateRecord(criteria,dataToUpdate,{},(err,data) => {
@@ -383,6 +609,9 @@ const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
    getProducts,
    getMarketProducts,
    addSellerKyc,
-   addSellerKycPayment
+   addSellerKycPayment,
+   addBuyerToProduct,
+   addBuyerKyc,
+   addBuyerKycPayment
  };
  

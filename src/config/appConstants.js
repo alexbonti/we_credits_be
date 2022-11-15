@@ -31,7 +31,9 @@ const DATABASE = {
     PENDING: "PENDING",
     AVAILABLE: "AVAILABLE",
     PROCESSING: "PROCESSING",
-    COMPLETED: "COMPLETED"
+    COMPLETED: "COMPLETED",
+    ADMIN_APPROVAL: "ADMIN_APPROVAL",
+    CANCELLED: "CANCELLED"
   }
 };
 
@@ -244,10 +246,20 @@ var STATUS_MSG = {
       customMessage: "Product does not exist",
       type: "PRODUCT_NO_EXIST"
     },
+    TRANSACTION_NO_EXIST: {
+      statusCode: 400,
+      customMessage: "Transaction does not exist",
+      type: "TRANSACTION_NO_EXIST"
+    },
     PAYMENT_DECLINED: {
       statusCode: 400,
       customMessage: "Unfortunately your payment was declined.",
       type: "PAYMENT_DECLINED"
+    },
+    SAME_USER_FOR_PRODUCT: {
+      statusCode: 400,
+      customMessage: "Buyer and seller cannot be the same person",
+      type: "SAME_USER_FOR_PRODUCT"
     }
   },
   SUCCESS: {

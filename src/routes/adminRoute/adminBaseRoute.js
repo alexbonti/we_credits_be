@@ -45,7 +45,7 @@ const adminLogin = {
 
 const accessTokenLogin = {
   method: "POST",
-  path: "/api/admin/accessTokenLogin",
+  path: "/api/admin/login/accessToken",
   handler: function (request, h) {
     let userData = request?.auth?.credentials?.userData || null;
     (request.auth &&
@@ -84,7 +84,7 @@ const accessTokenLogin = {
 
 const createAdmin = {
   method: "POST",
-  path: "/api/admin/createAdmin",
+  path: "/api/admin/usermanagement/admin",
   handler: function (request, h) {
     let userData =
       (request.auth &&
@@ -141,7 +141,7 @@ const createAdmin = {
 
 const getAdmin = {
   method: "GET",
-  path: "/api/admin/getAdmin",
+  path: "/api/admin/usermanagement/admin",
   handler: function (request, h) {
     let userData =
       (request.auth &&
@@ -177,18 +177,20 @@ const getAdmin = {
 
 const blockUnblockAdmin = {
   method: "PUT",
-  path: "/api/admin/blockUnblockAdmin",
+  path: "/api/admin/usermanagement/admin/{sid}/blockUnblock",
   handler: function (request, h) {
     let userData =
       (request.auth &&
         request.auth.credentials &&
         request.auth.credentials.userData) ||
       null;
-    let payloadData = request.payload;
     return new Promise((resolve, reject) => {
       Controller.AdminBaseController.blockUnblockAdmin(
         userData,
-        payloadData,
+        {
+          adminId: request.params.sid,
+          block: request.payload.block,
+        },
         function (err, data) {
           if (!err) {
             resolve(UniversalFunctions.sendSuccess(null, data));
@@ -204,9 +206,11 @@ const blockUnblockAdmin = {
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
+      params: Joi.object({
+        sid: Joi.string().required(),
+      }),
       payload: Joi.object({
-        adminId: Joi.string().required(),
-        block: Joi.boolean().required()
+        block: Joi.boolean().required(),
       }).label("Admin: Block-Unblock Admin"),
       failAction: UniversalFunctions.failActionFunction
     },
@@ -222,7 +226,7 @@ const blockUnblockAdmin = {
 
 const createUser = {
   method: "POST",
-  path: "/api/admin/createUser",
+  path: "/api/admin/usermanagement/user",
   handler: function (request, h) {
     let userData =
       (request.auth &&
@@ -294,7 +298,7 @@ const createUser = {
 
 const getUser = {
   method: "GET",
-  path: "/api/admin/getUser",
+  path: "/api/admin/usermanagement/user",
   handler: function (request, h) {
     let userData =
       (request.auth &&
@@ -330,7 +334,7 @@ const getUser = {
 
 const blockUnblockUser = {
   method: "PUT",
-  path: "/api/admin/blockUnblockUser",
+  path: "/api/admin/usermanagement/user/{sid}/blockUnblock",
   handler: function (request, h) {
     let userData =
       (request.auth &&
@@ -341,7 +345,7 @@ const blockUnblockUser = {
     return new Promise((resolve, reject) => {
       Controller.AdminBaseController.blockUnblockUser(
         userData,
-        payloadData,
+        {userId:request.params.sid ,block: request.payload.block},
         function (err, data) {
           if (!err) {
             resolve(UniversalFunctions.sendSuccess(null, data));
@@ -357,9 +361,11 @@ const blockUnblockUser = {
     tags: ["api", "admin"],
     auth: "UserAuth",
     validate: {
+      params: Joi.object({
+        sid: Joi.string().required(),
+      }),
       payload: Joi.object({
-        userId: Joi.string().required(),
-        block: Joi.boolean().required()
+        block: Joi.boolean().required(),
       }).label("Admin: Block-Unblock User"),
       failAction: UniversalFunctions.failActionFunction
     },

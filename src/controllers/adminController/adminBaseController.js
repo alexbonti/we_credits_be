@@ -711,25 +711,28 @@ const approveProduct = function (userData,payloadData, callback) {
     (cb) => {
       if(productData.status == "PENDING") {
           const query = {
-            _id: payloadData.transaction,
+            _id: payloadData.id,
           };
           const dataToUpdate = {
             $set: {
-              sellerKycApproved: true
+              "sellerKyc.adminApproved": true,
+              status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE,
+              onMarket: true
             }
           };
-          Service.TransactionService.updateRecord(query, dataToUpdate, {}, (err, data) => {
+          Service.ProductService.updateRecord(query, dataToUpdate, {}, (err, data) => {
             if (err) cb(err);
             else cb()
           });
         }
       else if(productData.status == "PROCESSING") {
         const query = {
-          _id: payloadData.transaction,
+          _id: productData.activeTransaction,
         };
         const dataToUpdate = {
           $set: {
-            buyerKycApproved: true
+            "buyerKyc.adminApproved": true,
+            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.ADMIN_APPROVAL
           }
         };
         Service.TransactionService.updateRecord(query, dataToUpdate, {}, (err, data) => {
@@ -740,29 +743,14 @@ const approveProduct = function (userData,payloadData, callback) {
       else cb()
     },
     (cb) => {
-      if(productData.status == "PENDING") {
-        const query = {
-          _id: payloadData.id,
-        };
-        const dataToUpdate = {
-          $set: {
-            onMarket: true,
-            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE
-          }
-        };
-        Service.ProductService.updateRecord(query, dataToUpdate, {}, (err, data) => {
-          if (err) cb(err);
-          else cb()
-        });
-      }
-      else if(productData.status == "PROCESSING") {
+      if(productData.status == "PROCESSING") {
         const query = {
           _id: payloadData.id,
         };
         const dataToUpdate = {
           $set: {
             onMarket: false,
-            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.COMPLETED
+            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.ADMIN_APPROVAL
           }
         };
         Service.ProductService.updateRecord(query, dataToUpdate, {}, (err, data) => {
@@ -803,7 +791,7 @@ const getProductDetails = function (userData,payloadData, callback) {
         _id: payloadData.id
       };
 
-      var path = "transaction";
+      var path = "activeTransaction";
       var select = "";
       var populate = {
         path: path,
