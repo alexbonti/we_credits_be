@@ -85,9 +85,23 @@ export default class GenericService {
      * @param {Object} options 
      * @param {Function} callback 
      */
-     getRecordWithPagination(criteria, projection, options, callback) {
+    getRecordWithPagination(criteria, projection, options, callback) {
         options.lean = true;
         MODELS[this.modelName].find(criteria, projection, options, callback).skip(options.skip).limit(options.limit);
+    }
+
+    /**
+     * @author Jason Pham
+     * @description Retrieve records with pagination and population
+     * @param {Object} criteria 
+     * @param {Object} projection 
+     * @param {Object} populate 
+     * @param {Object} options 
+     * @param {Function} callback 
+     */
+    getRecordWithPaginationPopulate(criteria, projection, populate, options, callback) {
+        options.lean = true;
+        MODELS[this.modelName].find(criteria).select(projection).populate(populate).skip(options.skip).limit(options.limit).exec(callback);
     }
 
     /**
