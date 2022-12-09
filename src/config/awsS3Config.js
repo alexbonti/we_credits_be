@@ -4,7 +4,7 @@
 * as the name you give while running upload_setup.sh
 */
 var s3BucketCredentials = {
-    "projectFolder":"degicredit-bucket",
+    "projectFolder": "degicredit-bucket",
     "bucket": "degicredit-bucket",
     "accessKeyId": "AKIAVF72J5OOI7VYO3WN",
     "secretAccessKey": "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",
@@ -20,6 +20,6 @@ var s3BucketCredentials = {
         "audio": "audio"
     }
 };
-module.exports = {
+export default {
     s3BucketCredentials: s3BucketCredentials
 };

@@ -11,6 +11,7 @@
 import Service from "../../services";
 import async from "async";
 import UniversalFunctions from "../../utils/universalFunctions";
+import { AppConfig } from "aws-sdk";
 const Config = UniversalFunctions.CONFIG;
 const ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 const _ = require("underscore");
@@ -174,7 +175,8 @@ const getMarketProducts = function (userData, payloadData, callback) {
     (cb) => {
       const query = {
         onMarket: true,
-        status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE
+        status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE,
+        userId: { $ne: userFound._id }
       };
       const projection = {
         "sellerKyc.kycTransaction": 0
@@ -256,7 +258,10 @@ const addSellerKyc = function (userData, payloadData, callbackRoute) {
 }
 
 const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
+  const SELLING_FEE = 0.5;
   let userFound, productData;
+  let paymentMethod, paymentIntentId;
+
   async.series(
     [
       (cb) => {
@@ -318,19 +323,54 @@ const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
           }
         })
       },
-      // (cb) => {
-      //     const dataToSend = {
-      //         customerId: userFound.stripeId,
-      //         cardSource: payloadData.cardSource
-      //     }
-      //     Service.PaymentService.addStripeCard(dataToSend, function (err, data) {
-      //         if (err) cb(ERROR.PAYMENT_DECLINED)
-      //         else {
-      //             cardDetails = data;
-      //             cb()
-      //         }
-      //     })
-      // },
+      (cb) => {
+        const dataToSend = {
+          customerId: userFound.stripeId,
+          cardSource: payloadData.cardSource
+        }
+        Service.PaymentService.addPaymentMethod(dataToSend, function (err, data) {
+          if (err) {
+            appLogger.error("addPaymentMethod", err);
+            cb(ERROR.PAYMENT_DECLINED)
+          }
+          else {
+            paymentMethod = data;
+            cb()
+          }
+        })
+      },
+      (cb) => {
+        const dataToSend = {
+          customerId: userFound.stripeId,
+          paymentMethodId: paymentMethod.id,
+          amount: SELLING_FEE
+        }
+        Service.PaymentService.createCharge(dataToSend, function (err, data) {
+          if (err) {
+            appLogger.error("createCharge", err);
+            cb(ERROR.PAYMENT_DECLINED)
+          }
+          else {
+            paymentIntentId = data.id
+            cb()
+          }
+        })
+      },
+      (cb) => {
+        const dataToSend = {
+          paymenIntentId: paymentIntentId,
+        }
+        Service.PaymentService.confirmCharge(dataToSend, function (err, data) {
+          if (err) {
+            appLogger.error("confirmCharge", err);
+            cb(ERROR.PAYMENT_DECLINED)
+          }
+          else {
+            console.log("=== Payment Confirm: ", data);
+            cb()
+          }
+        })
+      },
       (cb) => {
         const criteria = {
           _id: productData._id
@@ -338,7 +378,7 @@ const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
         const dataToUpdate = {
           $set: {
             "sellerKyc.kycTransaction": {
-              amount: 50,
+              amount: SELLING_FEE,
               paymentStatus: "COMPLETED"
             }
           }
