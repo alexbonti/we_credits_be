@@ -37,6 +37,15 @@ const product = new Schema({
             stripeTransactionId: { type: String },
             paymentStatus: { type: String, enum: ["PENDING", "COMPLETED"] }
         },
+        sectionA: {
+            a1: { type: String },
+            a2: { type: Number },
+            a3: { type: String },
+            a4: { type: String },
+            a5: { type: Boolean },
+            a6: { type: String },
+            a7: { type: Boolean },
+        },
         documentUrl: { type: String },
         adminApproved: { type: Boolean, default: false, required: true },
         kycSignature: { type: String },

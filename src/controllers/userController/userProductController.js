@@ -238,7 +238,8 @@ const addSellerKyc = function (userData, payloadData, callbackRoute) {
         const dataToUpdate = {
           $set: {
             "sellerKyc.documentUrl": payloadData.kycDocument,
-            "sellerKyc.kycSignature": payloadData.kycSignature
+            "sellerKyc.kycSignature": payloadData.kycSignature,
+            "sellerKyc.sectionA": payloadData.sectionA,
           }
         }
         Service.ProductService.updateRecord(criteria, dataToUpdate, {}, (err, data) => {
@@ -524,7 +525,9 @@ const addBuyerKyc = function (userData, payloadData, callbackRoute) {
         const dataToUpdate = {
           $set: {
             "buyerKyc.documentUrl": payloadData.kycDocument,
-            "buyerKyc.kycSignature": payloadData.kycSignature
+            "buyerKyc.kycSignature": payloadData.kycSignature,
+            "sellerKyc.sectionA": payloadData.sectionA,
+            "buyerKyc.cassetteNumber": payloadData.cassetteNumber,
           }
         }
         Service.TransactionService.updateRecord(criteria, dataToUpdate, {}, (err, data) => {
@@ -547,6 +550,8 @@ const addBuyerKyc = function (userData, payloadData, callbackRoute) {
 
 const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
   let userFound, transactionData;
+  let paymentMethod, paymentIntentId;
+
   async.series(
     [
       (cb) => {
@@ -572,7 +577,10 @@ const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
         };
         const projection = {
         };
-        Service.TransactionService.getRecord(query, projection, {}, (err, data) => {
+        const populate = {
+          path: "productId"
+        };
+        Service.TransactionService.getPopulatedRecords(query, projection, populate, (err, data) => {
           if (err) cb(err);
           else {
             if (data.length == 0) cb(ERROR.TRANSACTION_NO_EXIST)
@@ -608,19 +616,54 @@ const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
           }
         })
       },
-      // (cb) => {
-      //     const dataToSend = {
-      //         customerId: userFound.stripeId,
-      //         cardSource: payloadData.cardSource
-      //     }
-      //     Service.PaymentService.addStripeCard(dataToSend, function (err, data) {
-      //         if (err) cb(ERROR.PAYMENT_DECLINED)
-      //         else {
-      //             cardDetails = data;
-      //             cb()
-      //         }
-      //     })
-      // },
+      (cb) => {
+        const dataToSend = {
+          customerId: userFound.stripeId,
+          cardSource: payloadData.cardSource
+        }
+        Service.PaymentService.addPaymentMethod(dataToSend, function (err, data) {
+          if (err) {
+            appLogger.error("addPaymentMethod", err);
+            cb(ERROR.PAYMENT_DECLINED)
+          }
+          else {
+            paymentMethod = data;
+            cb()
+          }
+        })
+      },
+      (cb) => {
+        const dataToSend = {
+          customerId: userFound.stripeId,
+          paymentMethodId: paymentMethod.id,
+          amount: transactionData.productId.sellValue
+        }
+        Service.PaymentService.createCharge(dataToSend, function (err, data) {
+          if (err) {
+            appLogger.error("createCharge", err);
+            cb(ERROR.PAYMENT_DECLINED)
+          }
+          else {
+            paymentIntentId = data.id
+            cb()
+          }
+        })
+      },
+      (cb) => {
+        const dataToSend = {
+          paymenIntentId: paymentIntentId,
+        }
+        Service.PaymentService.confirmCharge(dataToSend, function (err, data) {
+          if (err) {
+            appLogger.error("confirmCharge", err);
+            cb(ERROR.PAYMENT_DECLINED)
+          }
+          else {
+            console.log("=== Payment Confirm: ", data);
+            cb()
+          }
+        })
+      },
       (cb) => {
         const criteria = {
           _id: transactionData._id
@@ -628,7 +671,7 @@ const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
         const dataToUpdate = {
           $set: {
             "buyerKyc.kycTransaction": {
-              amount: 50,
+              amount: transactionData.productId.sellValue,
               paymentStatus: "COMPLETED"
             }
           }

@@ -6,9 +6,9 @@
 var s3BucketCredentials = {
     "projectFolder": "degicredit-bucket",
     "bucket": "degicredit-bucket",
-    "accessKeyId": "AKIAVF72J5OOI7VYO3WN",
-    "secretAccessKey": "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",
-    "s3URL": "https://my-maps-bucket.s3.ap-southeast-2.amazonaws.com",
+    "accessKeyId": "AKIAVF72J5OOOWW2FRKR",
+    "secretAccessKey": "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",
+    "s3URL": "https://degicredit-bucket.s3.ap-southeast-2.amazonaws.com",
     "folder": {
         "profilePicture": "profilePicture",
         "thumb": "thumb",
