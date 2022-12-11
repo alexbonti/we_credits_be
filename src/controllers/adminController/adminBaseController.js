@@ -582,8 +582,8 @@ const createProductTypes = function (userData, payloadData, callback) {
       });
     },
     (cb) => {
-      Service.ProductTypeService.createRecord(payloadData,(err,data) => {
-        if(err) cb(err);
+      Service.ProductTypeService.createRecord(payloadData, (err, data) => {
+        if (err) cb(err);
         else {
           productData = data;
           cb()
@@ -592,7 +592,7 @@ const createProductTypes = function (userData, payloadData, callback) {
     }
   ], (err) => {
     if (err) return callback(err);
-    callback(null, {data: productData})
+    callback(null, { data: productData })
   })
 }
 
@@ -631,7 +631,7 @@ const getProductTypes = function (userData, callback) {
   })
 }
 
-const getProductApprovalRequests = function (userData,payloadData, callback) {
+const getProductApprovalRequests = function (userData, payloadData, callback) {
   let productData;
   let userFound;
   async.series([
@@ -653,14 +653,17 @@ const getProductApprovalRequests = function (userData,payloadData, callback) {
     },
     (cb) => {
       const query = {
-        $or:[
-          {status: "PENDING"},
-          {status: "PROCESSING"}
+        $or: [
+          { status: "PENDING" },
+          { status: "PROCESSING" }
         ]
       };
       const projection = {
       };
-      Service.ProductService.getRecordWithPagination(query, projection, {skip: payloadData.skip,limit: payloadData.limit}, (err, data) => {
+      const populate = {
+        path: "type activeTransaction"
+      };
+      Service.ProductService.getRecordWithPaginationPopulate(query, projection, populate, { skip: payloadData.skip, limit: payloadData.limit }, (err, data) => {
         if (err) cb(err);
         productData = data;
         cb(null);
@@ -672,7 +675,7 @@ const getProductApprovalRequests = function (userData,payloadData, callback) {
   })
 }
 
-const approveProduct = function (userData,payloadData, callback) {
+const approveProduct = function (userData, payloadData, callback) {
   let userFound, productData;
   async.series([
     (cb) => {
@@ -700,7 +703,7 @@ const approveProduct = function (userData,payloadData, callback) {
       Service.ProductService.getRecord(query, projection, {}, (err, data) => {
         if (err) cb(err);
         else {
-          if(data.length == 0) cb(ERROR.PRODUCT_NO_EXIST)
+          if (data.length == 0) cb(ERROR.PRODUCT_NO_EXIST)
           else {
             productData = data && data[0] || null;
             cb()
@@ -709,23 +712,23 @@ const approveProduct = function (userData,payloadData, callback) {
       });
     },
     (cb) => {
-      if(productData.status == "PENDING") {
-          const query = {
-            _id: payloadData.id,
-          };
-          const dataToUpdate = {
-            $set: {
-              "sellerKyc.adminApproved": true,
-              status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE,
-              onMarket: true
-            }
-          };
-          Service.ProductService.updateRecord(query, dataToUpdate, {}, (err, data) => {
-            if (err) cb(err);
-            else cb()
-          });
-        }
-      else if(productData.status == "PROCESSING") {
+      if (productData.status == "PENDING") {
+        const query = {
+          _id: payloadData.id,
+        };
+        const dataToUpdate = {
+          $set: {
+            "sellerKyc.adminApproved": true,
+            status: Config.APP_CONSTANTS.DATABASE.PRODUCT_STATUS.AVAILABLE,
+            onMarket: true
+          }
+        };
+        Service.ProductService.updateRecord(query, dataToUpdate, {}, (err, data) => {
+          if (err) cb(err);
+          else cb()
+        });
+      }
+      else if (productData.status == "PROCESSING") {
         const query = {
           _id: productData.activeTransaction,
         };
@@ -743,7 +746,7 @@ const approveProduct = function (userData,payloadData, callback) {
       else cb()
     },
     (cb) => {
-      if(productData.status == "PROCESSING") {
+      if (productData.status == "PROCESSING") {
         const query = {
           _id: payloadData.id,
         };
@@ -766,7 +769,7 @@ const approveProduct = function (userData,payloadData, callback) {
   })
 }
 
-const getProductDetails = function (userData,payloadData, callback) {
+const getProductDetails = function (userData, payloadData, callback) {
   let productData;
   let userFound;
   async.series([

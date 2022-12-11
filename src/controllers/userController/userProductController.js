@@ -526,7 +526,7 @@ const addBuyerKyc = function (userData, payloadData, callbackRoute) {
           $set: {
             "buyerKyc.documentUrl": payloadData.kycDocument,
             "buyerKyc.kycSignature": payloadData.kycSignature,
-            "sellerKyc.sectionA": payloadData.sectionA,
+            "buyerKyc.sectionA": payloadData.sectionA,
             "buyerKyc.cassetteNumber": payloadData.cassetteNumber,
           }
         }
