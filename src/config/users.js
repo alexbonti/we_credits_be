@@ -1,7 +1,7 @@
 export const superAdmins = [
     {
-        name: "degicredit admin",
-        email: "degicredit@admin.com",
+        name: "wecredits admin",
+        email: "wecredits@admin.com",
         password: "123456"
     },
 ];

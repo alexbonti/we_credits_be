@@ -24,19 +24,29 @@ const templates = {
 //   host: "smtp-relay.sendinblue.com",
 //   port: 587,
 //   auth: {
-//     user: process.env.NODEMAILER_USER,
-//     pass: process.env.NODEMAILER_PASSWORD
+// user: process.env.NODEMAILER_USER,
+// pass: process.env.NODEMAILER_PASSWORD
 //   }
 // });
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.ethereal.email',
+  host: "smtp.office365.com",
+  secure: false,
   port: 587,
   auth: {
-    user: 'eve.runte@ethereal.email',
-    pass: 'gJ2nQCjRhs2eabJMXt'
-  }
+    user: process.env.NODEMAILER_USER,
+    pass: process.env.NODEMAILER_PASSWORD
+  },
 });
+
+// const transporter = nodemailer.createTransport({
+//   host: 'smtp.ethereal.email',
+//   port: 587,
+//   auth: {
+//     user: 'eve.runte@ethereal.email',
+//     pass: 'gJ2nQCjRhs2eabJMXt'
+//   }
+// });
 
 
 const defaultMailOptions = {

@@ -1,5 +1,5 @@
 {
-  "name": "degicredit-backend",
+  "name": "wecredits-backend",
   "main": "src/entry.js",
   "description": "A Node based module using Mongodb to onboard user's into a very basic application, secured using JWT authorization",
   "version": "1.1.0",
