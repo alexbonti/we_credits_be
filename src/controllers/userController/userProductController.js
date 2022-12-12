@@ -16,6 +16,8 @@ const Config = UniversalFunctions.CONFIG;
 const ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
 const _ = require("underscore");
 
+const SERVICE_FEE = 0.5;
+
 const getProductTypes = function (userData, callback) {
   let productTypes;
   let userFound;
@@ -240,6 +242,7 @@ const addSellerKyc = function (userData, payloadData, callbackRoute) {
             "sellerKyc.documentUrl": payloadData.kycDocument,
             "sellerKyc.kycSignature": payloadData.kycSignature,
             "sellerKyc.sectionA": payloadData.sectionA,
+            "sellerKyc.ibanNumber": payloadData.ibanNumber,
           }
         }
         Service.ProductService.updateRecord(criteria, dataToUpdate, {}, (err, data) => {
@@ -259,7 +262,6 @@ const addSellerKyc = function (userData, payloadData, callbackRoute) {
 }
 
 const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
-  const SELLING_FEE = 0.5;
   let userFound, productData;
   let paymentMethod, paymentIntentId;
 
@@ -344,7 +346,7 @@ const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
         const dataToSend = {
           customerId: userFound.stripeId,
           paymentMethodId: paymentMethod.id,
-          amount: SELLING_FEE
+          amount: SERVICE_FEE
         }
         Service.PaymentService.createCharge(dataToSend, function (err, data) {
           if (err) {
@@ -379,7 +381,7 @@ const addSellerKycPayment = function (userData, payloadData, callbackRoute) {
         const dataToUpdate = {
           $set: {
             "sellerKyc.kycTransaction": {
-              amount: SELLING_FEE,
+              amount: SERVICE_FEE,
               paymentStatus: "COMPLETED"
             }
           }
@@ -577,10 +579,7 @@ const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
         };
         const projection = {
         };
-        const populate = {
-          path: "productId"
-        };
-        Service.TransactionService.getPopulatedRecords(query, projection, populate, (err, data) => {
+        Service.TransactionService.getRecord(query, projection, {}, (err, data) => {
           if (err) cb(err);
           else {
             if (data.length == 0) cb(ERROR.TRANSACTION_NO_EXIST)
@@ -636,7 +635,7 @@ const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
         const dataToSend = {
           customerId: userFound.stripeId,
           paymentMethodId: paymentMethod.id,
-          amount: transactionData.productId.sellValue
+          amount: SERVICE_FEE
         }
         Service.PaymentService.createCharge(dataToSend, function (err, data) {
           if (err) {
@@ -671,7 +670,7 @@ const addBuyerKycPayment = function (userData, payloadData, callbackRoute) {
         const dataToUpdate = {
           $set: {
             "buyerKyc.kycTransaction": {
-              amount: transactionData.productId.sellValue,
+              amount: SERVICE_FEE,
               paymentStatus: "COMPLETED"
             }
           }

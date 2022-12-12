@@ -214,7 +214,8 @@ const addSellerKyc = {
           a7: Joi.bool().required(),
         }),
         kycDocument: Joi.string().required(),
-        kycSignature: Joi.string().required()
+        kycSignature: Joi.string().required(),
+        ibanNumber: Joi.number().required(),
       }).label("User: add Seller Kyc"),
       failAction: UniversalFunctions.failActionFunction
     },

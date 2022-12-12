@@ -46,6 +46,7 @@ const product = new Schema({
             a6: { type: String },
             a7: { type: Boolean },
         },
+        ibanNumber: { type: Number },
         documentUrl: { type: String },
         adminApproved: { type: Boolean, default: false, required: true },
         kycSignature: { type: String },
