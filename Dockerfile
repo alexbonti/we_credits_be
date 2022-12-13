@@ -8,10 +8,10 @@ RUN apk add --update imagemagick && \
 WORKDIR /app 
 COPY . . 
 
-EXPOSE 8026
+EXPOSE 8000
 
 RUN npm install --silent
 RUN cp .env.example .env
-RUN PROJECT_FOLDER=degicredit-bucket bash setup_upload.sh
+RUN PROJECT_FOLDER=wecredits-bucket bash setup_upload.sh
 
 CMD ["npm", "start"]

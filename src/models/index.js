@@ -5,7 +5,7 @@ import User from './user';
 import Admin from './admin';
 import Token from './token';
 import SSO from './sso';
-import ProductTypes from './productTypes';
+import ProductType from './productType';
 import Product from './product';
 import Transaction from './transaction';
 
@@ -17,7 +17,7 @@ export default {
   Admin,
   Token,
   SSO,
-  ProductTypes,
+  ProductType,
   Product,
   Transaction
 }

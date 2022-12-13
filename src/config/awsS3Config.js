@@ -4,11 +4,11 @@
 * as the name you give while running upload_setup.sh
 */
 var s3BucketCredentials = {
-    "projectFolder":"degicredit-bucket",
-    "bucket": "degicredit-bucket",
-    "accessKeyId": "AKIAVF72J5OOI7VYO3WN",
-    "secretAccessKey": "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",
-    "s3URL": "https://my-maps-bucket.s3.ap-southeast-2.amazonaws.com",
+    "projectFolder": "wecredits-bucket",
+    "bucket": "wecredits-bucket",
+    "accessKeyId": "AKIA46K4LMSSEKBVQSRX",
+    "secretAccessKey": "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",
+    "s3URL": "https://wecredits-bucket.s3.ap-southeast-2.amazonaws.com",
     "folder": {
         "profilePicture": "profilePicture",
         "thumb": "thumb",
@@ -20,6 +20,6 @@ var s3BucketCredentials = {
         "audio": "audio"
     }
 };
-module.exports = {
+export default {
     s3BucketCredentials: s3BucketCredentials
 };
