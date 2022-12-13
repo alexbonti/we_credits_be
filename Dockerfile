@@ -1,6 +1,7 @@
 FROM node
 
-RUN apt-get install -y imagemagick && \
+RUN apt-get update && \
+    apt-get install -y imagemagick && \
     apt-get install -y graphicsmagick && \
     apt-get install -yffmpeg && \
     apt-get install -y bash
