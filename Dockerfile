@@ -1,9 +1,9 @@
 FROM registry.access.redhat.com/ubi8/nodejs-16:latest
 
-RUN apk add --update imagemagick && \
-    apk add --update graphicsmagick && \
-    apk add --update ffmpeg && \
-    apk add --update bash
+RUN apt-get install -y imagemagick && \
+    apt-get install -y graphicsmagick && \
+    apt-get install -yffmpeg && \
+    apt-get install -y bash
 
 WORKDIR /app 
 COPY . . 
