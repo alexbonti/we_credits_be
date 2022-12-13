@@ -1,4 +1,4 @@
-FROM node
+FROM registry.access.redhat.com/ubi8/nodejs-16:latest
 
 RUN apt-get update && \
     apt-get install -y imagemagick && \
