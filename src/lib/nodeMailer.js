@@ -8,31 +8,43 @@
  * - ERROR - ‘red’
  * - FATAL - ‘magenta’
  */
- const nodemailer = require('nodemailer');
-const hbs = require('handlebars');
+import nodemailer from "nodemailer";
+import hbs from "handlebars";
 
 const templates = {
   generic: require('./mailTemplates/genericMail'),
+  forseller: require('./mailTemplates/forSeller'),
+  forbuyer: require('./mailTemplates/forBuyer'),
   otpverification: require('./mailTemplates/otpVerify'),
   passwordreset: require('./mailTemplates/passwordreset')
 };
 
 // To be used when using internal deakin SMTP server
+// const transporter = nodemailer.createTransport({
+//   host: "smtp-relay.sendinblue.com",
+//   port: 587,
+//   auth: {
+// user: process.env.NODEMAILER_USER,
+// pass: process.env.NODEMAILER_PASSWORD
+//   }
+// });
 
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.sendinblue.com",
+  host: "smtp.office365.com",
+  secure: false,
   port: 587,
   auth: {
     user: process.env.NODEMAILER_USER,
     pass: process.env.NODEMAILER_PASSWORD
-  }
+  },
 });
 
 // const transporter = nodemailer.createTransport({
-//   service: 'gmail',
+//   host: 'smtp.ethereal.email',
+//   port: 587,
 //   auth: {
-//     user: process.env.NODEMAILER_USER,
-//     pass: process.env.NODEMAILER_PASSWORD
+//     user: 'eve.runte@ethereal.email',
+//     pass: 'gJ2nQCjRhs2eabJMXt'
 //   }
 // });
 
@@ -49,8 +61,8 @@ const defaultMailOptions = {
  * 
  * @param {String} to email which the mail needs to be sent 
  * @param {String} subject subject of the email
- * @param {any} data 
- * @param {String} templateToUse generic | newaccount | otpverification | passwordreset
+ * @param {Object} data ex: {userName: "John Doe"}
+ * @param {String} templateToUse forseller | forbuyer | generic | newaccount | otpverification | passwordreset
  */
 const sendMail = (to, subject, data, templateToUse) => {
   if (process.env.NODEMAILER_USER === undefined && process.env.NODEMAILER_PASSWORD === undefined) {
@@ -77,6 +89,6 @@ const sendMail = (to, subject, data, templateToUse) => {
 }
 
 
-module.exports = {
+export default {
   sendMail: sendMail,
 };

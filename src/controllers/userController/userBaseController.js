@@ -12,7 +12,7 @@ import Service from "../../services";
 import async from "async";
 import UniversalFunctions from "../../utils/universalFunctions";
 import TokenManager from "../../lib/tokenManager";
-const NodeMailer = require('../../lib/nodeMailer') ;
+import NodeMailer from '../../lib/nodeMailer';
 
 const CodeGenerator = require("../../lib/codeGenerator");
 const ERROR = UniversalFunctions.CONFIG.APP_CONSTANTS.STATUS_MSG.ERROR;
@@ -100,15 +100,15 @@ const createUser = (payloadData, callback) => {
           }
         );
       },
-       (cb) => {
-          //Send Email to User
-          if (customerData) {
-              NodeMailer.sendMail(customerData.emailId,"WeCredits: Email Verification",{OTP:uniqueCode},"otpverification")
-              cb()
-          } else {
-              cb(ERROR.IMP_ERROR)
-          }
-      
+      (cb) => {
+        //Send Email to User
+        if (customerData) {
+          NodeMailer.sendMail(customerData.emailId, "WeCredits: Email Verification", { OTP: uniqueCode }, "otpverification")
+          cb()
+        } else {
+          cb(ERROR.IMP_ERROR)
+        }
+
       },
       (cb) => {
         //Set Access Token
@@ -250,7 +250,7 @@ const loginUser = (payloadData, callback) => {
             if (
               userFound &&
               userFound.password !=
-                UniversalFunctions.CryptData(payloadData.password)
+              UniversalFunctions.CryptData(payloadData.password)
             ) {
               cb(ERROR.INCORRECT_PASSWORD);
             }
@@ -777,13 +777,13 @@ var forgetPassword = function (payloadData, callback) {
       (cb) => {
         //Send Email to User
         if (customerData) {
-            NodeMailer.sendMail(customerData.emailId,"WeCredits: Paasword Reset Request",{firstname: customerData.firstName ,OTP:code},"passwordreset")
-            cb()
+          NodeMailer.sendMail(customerData.emailId, "WeCredits: Password Reset Request", { firstname: customerData.firstName, OTP: code }, "passwordreset")
+          cb()
         } else {
-            cb(ERROR.IMP_ERROR)
+          cb(ERROR.IMP_ERROR)
         }
-    
-    },
+
+      },
     ],
     function (error, result) {
       if (error) {

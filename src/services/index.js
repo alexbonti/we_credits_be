@@ -11,7 +11,7 @@ export default {
   AdminService: new GenericService('Admin'),
   TokenService: new GenericService('Token'),
   SSOManagerService: new GenericService('SSO'),
-  ProductTypeService: new GenericService('ProductTypes'),
+  ProductTypeService: new GenericService('ProductType'),
   ProductService: new GenericService('Product'),
   TransactionService: new GenericService("Transaction")
 };
