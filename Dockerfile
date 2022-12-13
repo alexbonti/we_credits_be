@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16
 
 RUN apk add --update imagemagick && \
     apk add --update graphicsmagick && \
