@@ -11,6 +11,7 @@ COPY . .
 EXPOSE 8026
 
 RUN npm install --silent
+RUN chown -R 1000670000:0 "/.npm"
 RUN cp .env.example .env
 RUN PROJECT_FOLDER=degicredit-bucket bash setup_upload.sh
 
