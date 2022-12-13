@@ -1,6 +1,7 @@
-FROM node:19
+FROM node:18-alpine
 
-RUN apk add --update imagemagick && \
+RUN apk add --update nodejs npm && \
+    apk add --update imagemagick && \
     apk add --update graphicsmagick && \
     apk add --update ffmpeg && \
     apk add --update bash
