@@ -1,7 +1,6 @@
-FROM node:18-alpine
+FROM registry.access.redhat.com/ubi8/nodejs-16:latest
 
-RUN apk add --update nodejs npm && \
-    apk add --update imagemagick && \
+RUN apk add --update imagemagick && \
     apk add --update graphicsmagick && \
     apk add --update ffmpeg && \
     apk add --update bash
