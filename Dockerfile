@@ -1,4 +1,4 @@
-FROM node:16
+FROM node
 
 RUN apk add --update imagemagick && \
     apk add --update graphicsmagick && \
